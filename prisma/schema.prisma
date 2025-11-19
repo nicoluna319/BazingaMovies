@@ -13,42 +13,78 @@ model User {
   name      String?
   avatarUrl String?
 
-  episodeProgresses EpisodeProgress[]
+  watchProgress WatchProgress[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model Series {
+model Content {
   id             String   @id @default(cuid())
-  externalId     String
-  externalSource String   // "tmdb", "imdb", etc.
-  type           String   // "tv" o "movie"
+  tmdbId         String   @unique // ID de TMDB
+  type           String   // "movie" | "tv"
   title          String
-  overview       String?
+  overview       String?  @db.Text
   posterUrl      String?
   backdropUrl    String?
-  totalSeasons   Int?
+  releaseDate    String?  // Fecha de estreno/lanzamiento
+  runtime        Int?     // Duración en minutos (para películas)
+  totalSeasons   Int?     // Total de temporadas (para series)
+  totalEpisodes  Int?     // Total de episodios (para series)
+  voteAverage    Float?   // Rating de TMDB
+  genres         String?  // JSON string con géneros
 
-  episodeProgresses EpisodeProgress[]
+  watchProgress WatchProgress[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([title])
+}
+
+model StreamingPlatform {
+  id   String @id @default(cuid())
+  name String @unique // "Netflix", "HBO Max", "Disney+", "Cine", etc.
+  logo String? // URL del logo
+
+  watchProgress WatchProgress[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model EpisodeProgress {
-  id            String   @id @default(cuid())
-  userId        String
-  seriesId      String
-  seasonNumber  Int
-  episodeNumber Int
-  status        String   // "in_progress" | "completed"
+model WatchProgress {
+  id         String   @id @default(cuid())
+  userId     String
+  contentId  String
+  platformId String?  // Plataforma donde se está viendo (opcional)
 
-  user   User   @relation(fields: [userId], references: [id])
-  series Series @relation(fields: [seriesId], references: [id])
+  // Estado de visualización
+  status String // "watching" | "completed" | "pending" | "dropped"
+
+  // Para series
+  currentSeason  Int? // Temporada actual
+  currentEpisode Int? // Episodio actual
+
+  // Para películas y series (tracking de tiempo opcional)
+  progressMinutes Int?     // Minutos vistos
+  totalMinutes    Int?     // Duración total
+  progressPercent Float?   // Porcentaje de progreso (0-100)
+
+  // Metadatos
+  startedAt   DateTime? // Cuándo empezó a verlo
+  completedAt DateTime? // Cuándo lo completó
+  lastWatched DateTime? // Última vez que lo vio
+
+  user     User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content  Content             @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  platform StreamingPlatform?  @relation(fields: [platformId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([userId, seriesId]) // un progreso por serie y usuario
+  @@unique([userId, contentId]) // Un progreso por contenido y usuario
+  @@index([status])
+  @@index([userId, status]) // Para filtrar por usuario y estado
 }
