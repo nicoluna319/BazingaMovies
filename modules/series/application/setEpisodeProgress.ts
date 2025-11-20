@@ -1,4 +1,3 @@
-import { EpisodeProgress } from "../domain/EpisodeProgress";
 import { SeriesProgressRepository } from "../infrastructure/SeriesProgressRepository";
 
 export async function setEpisodeProgress(params: {
@@ -10,5 +9,5 @@ export async function setEpisodeProgress(params: {
 }) {
   const repo = new SeriesProgressRepository();
   // aquí luego harás validaciones, etc.
-  await repo.saveProgress(params);
+  await repo.saveProgress();
 }
