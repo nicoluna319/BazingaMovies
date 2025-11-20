@@ -9,7 +9,7 @@ if (!TMDB_API_KEY) {
 
 function buildUrl(path: string, params: Record<string, string | number> = {}) {
   const url = new URL(`${TMDB_BASE_URL}${path}`);
-  url.searchParams.set("api_key", TMDB_API_KEY);
+  url.searchParams.set("api_key", TMDB_API_KEY!);
   url.searchParams.set("language", "es-ES"); // para tener títulos/descripciones en español
 
   for (const [key, value] of Object.entries(params)) {

@@ -1,6 +1,6 @@
 // modules/series/infrastructure/SeriesProgressRepository.ts
 export class SeriesProgressRepository {
-  async saveProgress(params: any) {
+  async saveProgress(/* params */) {
     // aquí luego usarás Prisma / MySQL
   }
 
